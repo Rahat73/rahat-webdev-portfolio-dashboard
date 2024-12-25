@@ -108,7 +108,7 @@ export const useDeleteData = ({
   const queryClient = useQueryClient();
 
   return useMutation<any, Error, TPostMutation>({
-    mutationFn: async ({ url }) => await deleteService(url),
+    mutationFn: async ({ url, postData }) => await deleteService(url, postData),
     onSuccess: (data) => {
       if (data === "invalid signature") {
         toast.error("Please login.");

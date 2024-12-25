@@ -28,9 +28,14 @@ export const updateService = async (
   }
 };
 
-export const deleteService = async (url: string) => {
+export const deleteService = async (
+  url: string,
+  postData?: Record<string, any>
+) => {
   try {
-    const { data } = await axiosInstance.delete(url);
+    const { data } = await axiosInstance.delete(url, {
+      data: postData,
+    });
 
     return data;
   } catch (error: any) {
