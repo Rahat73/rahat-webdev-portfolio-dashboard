@@ -7,6 +7,8 @@ import {
 } from "@nextui-org/navbar";
 import NextLink from "next/link";
 
+import LogoutBtn from "./logout-btn";
+
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Logo } from "@/components/icons";
 
@@ -28,11 +30,13 @@ export const Navbar = () => {
       >
         <NavbarItem className="hidden sm:flex gap-2">
           <ThemeSwitch />
+          <LogoutBtn />
         </NavbarItem>
       </NavbarContent>
 
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
         <ThemeSwitch />
+        <LogoutBtn />
         <NavbarMenuToggle />
       </NavbarContent>
     </NextUINavbar>

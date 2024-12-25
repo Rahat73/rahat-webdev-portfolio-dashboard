@@ -5,7 +5,7 @@ import AppButton from "./AppButton";
 
 const NavButtons: React.FC = () => {
   return (
-    <div className="grid grid-cols-2 gap-5 justify-center">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 justify-center">
       <AppButton href="/experience" icon={Briefcase} label="Experience" />
       <AppButton
         href="/personal-projects"
