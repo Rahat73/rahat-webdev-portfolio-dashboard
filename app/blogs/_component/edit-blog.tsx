@@ -8,17 +8,19 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@nextui-org/modal";
-import React from "react";
+import React, { useState } from "react";
 import { Form } from "@nextui-org/form";
-import { Input, Textarea } from "@nextui-org/input";
+import { Input } from "@nextui-org/input";
+import dynamic from "next/dynamic";
+import { Edit } from "lucide-react";
 
 import { Blog } from "../page";
 
 import { useUpdateData } from "@/hooks/mutation.hook";
 import { BLOG } from "@/api-endpoints";
 
-import "react-quill/dist/quill.snow.css";
-// const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+import "react-quill-new/dist/quill.snow.css";
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 const toolbarOptions = [
   ["bold", "italic", "underline", "strike"],
@@ -35,7 +37,8 @@ const modules = {
 };
 
 const EditBlog = ({ blog }: { blog: Blog }) => {
-  //   const [content, setContent] = useState("");
+  const [content, setContent] = useState(blog.content);
+  const [contentError, setContentError] = useState("");
 
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
@@ -43,14 +46,31 @@ const EditBlog = ({ blog }: { blog: Blog }) => {
     invalidateQueries: [BLOG],
   });
 
+  const isQuillEmpty = () => {
+    const quillEditor = document.querySelector(".ql-editor") as HTMLElement;
+
+    return quillEditor?.innerText.trim().length === 0;
+  };
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const postData = Object.fromEntries(formData);
 
+    if (isQuillEmpty()) {
+      setContentError("Content cannot be empty");
+
+      return;
+    } else {
+      setContentError("");
+    }
+
     const res = await mutateAsync({
-      url: BLOG,
-      postData,
+      url: BLOG + "/" + blog._id,
+      postData: {
+        ...postData,
+        content,
+      },
     });
 
     if (res?.success) {
@@ -60,8 +80,8 @@ const EditBlog = ({ blog }: { blog: Blog }) => {
 
   return (
     <div>
-      <Button variant="shadow" onClick={onOpen}>
-        Edit Blog
+      <Button size="sm" variant="light" onClick={onOpen}>
+        <Edit size={20} />
       </Button>
       <Modal
         backdrop="blur"
@@ -75,14 +95,6 @@ const EditBlog = ({ blog }: { blog: Blog }) => {
         <ModalContent>
           <ModalHeader>Add blog</ModalHeader>
           <ModalBody>
-            {/* <ReactQuill
-              className="mb-14"
-              modules={modules}
-              placeholder="Enter post comment"
-              theme="snow"
-              value={content}
-              onChange={setContent}
-            /> */}
             <Form validationBehavior="native" onSubmit={onSubmit}>
               <Input
                 isRequired
@@ -93,16 +105,17 @@ const EditBlog = ({ blog }: { blog: Blog }) => {
                 name="title"
                 placeholder="Enter title"
               />
-              <Textarea
-                isRequired
-                defaultValue={blog.content}
-                errorMessage="Please enter a content"
-                label="Content"
-                labelPlacement="outside"
-                minRows={10}
-                name="content"
+              <ReactQuill
+                className="h-40 mb-14 w-full"
+                modules={modules}
                 placeholder="Enter content"
+                theme="snow"
+                value={content}
+                onChange={setContent}
               />
+              {contentError && (
+                <div className="text-sm text-red-500">{contentError}</div>
+              )}
               <Button isLoading={isPending} type="submit" variant="bordered">
                 Submit
               </Button>

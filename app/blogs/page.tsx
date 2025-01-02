@@ -17,6 +17,7 @@ import EditBlog from "./_component/edit-blog";
 
 import { useFetchData } from "@/hooks/fetch.hook";
 import { BLOG } from "@/api-endpoints";
+import { truncateDescription } from "@/utils";
 
 export type Blog = {
   _id: string;
@@ -64,7 +65,12 @@ const Blogs = () => {
                     <TableCell>
                       <EditBlog blog={item} />
                       <DeleteBlog id={item._id} />
-                      asd
+                    </TableCell>
+                  );
+                } else if (columnKey === "content") {
+                  return (
+                    <TableCell>
+                      {truncateDescription(item.content, 200)}
                     </TableCell>
                   );
                 }

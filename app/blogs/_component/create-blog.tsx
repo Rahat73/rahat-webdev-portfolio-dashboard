@@ -8,15 +8,16 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@nextui-org/modal";
-import React from "react";
+import React, { useState } from "react";
 import { Form } from "@nextui-org/form";
-import { Input, Textarea } from "@nextui-org/input";
+import { Input } from "@nextui-org/input";
+import dynamic from "next/dynamic";
 
 import { usePostData } from "@/hooks/mutation.hook";
 import { BLOG } from "@/api-endpoints";
 
-import "react-quill/dist/quill.snow.css";
-// const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+import "react-quill-new/dist/quill.snow.css";
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 const toolbarOptions = [
   ["bold", "italic", "underline", "strike"],
@@ -33,7 +34,8 @@ const modules = {
 };
 
 const CreateBlog = () => {
-  //   const [content, setContent] = useState("");
+  const [content, setContent] = useState("");
+  const [contentError, setContentError] = useState("");
 
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
@@ -41,14 +43,31 @@ const CreateBlog = () => {
     invalidateQueries: [BLOG],
   });
 
+  const isQuillEmpty = () => {
+    const quillEditor = document.querySelector(".ql-editor") as HTMLElement;
+
+    return quillEditor?.innerText.trim().length === 0;
+  };
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const postData = Object.fromEntries(formData);
 
+    if (isQuillEmpty()) {
+      setContentError("Content cannot be empty");
+
+      return;
+    } else {
+      setContentError("");
+    }
+
     const res = await mutateAsync({
       url: BLOG,
-      postData,
+      postData: {
+        ...postData,
+        content,
+      },
     });
 
     if (res?.success) {
@@ -73,14 +92,6 @@ const CreateBlog = () => {
         <ModalContent>
           <ModalHeader>Add blog</ModalHeader>
           <ModalBody>
-            {/* <ReactQuill
-              className="mb-14"
-              modules={modules}
-              placeholder="Enter post comment"
-              theme="snow"
-              value={content}
-              onChange={setContent}
-            /> */}
             <Form validationBehavior="native" onSubmit={onSubmit}>
               <Input
                 isRequired
@@ -90,15 +101,18 @@ const CreateBlog = () => {
                 name="title"
                 placeholder="Enter title"
               />
-              <Textarea
-                isRequired
-                errorMessage="Please enter a content"
-                label="Content"
-                labelPlacement="outside"
-                minRows={10}
-                name="content"
+
+              <ReactQuill
+                className="h-40 mb-14 w-full"
+                modules={modules}
                 placeholder="Enter content"
+                theme="snow"
+                value={content}
+                onChange={setContent}
               />
+              {contentError && (
+                <div className="text-sm text-red-500">{contentError}</div>
+              )}
               <Button isLoading={isPending} type="submit" variant="bordered">
                 Submit
               </Button>
